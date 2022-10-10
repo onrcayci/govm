@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 
-import { downloadGoTarball, extractGoTarball } from "./utils";
+import { downloadGoTarball, extractGoTarball, isTarballCached } from "./utils";
 import { versions } from "./versions";
 
 export const installCommand = async (goVersion: string): Promise<void> => {
@@ -9,16 +9,20 @@ export const installCommand = async (goVersion: string): Promise<void> => {
   const filename = `go${goVersion}.${
     process.platform === "win32" ? "windows" : process.platform
   }-${process.arch === "x64" ? "amd64" : process.arch}.tar.gz`;
-  console.log("Downloading the tarball.");
-  // Download the tarball
-  await downloadGoTarball(filename);
-  console.log("Finished downloading the file.");
+  // Check if the tarball already exists in the cache
+  const tarballIsCached = await isTarballCached(filename);
+  if (!tarballIsCached) {
+    console.log("Downloading the tarball.");
+    // Download the tarball
+    await downloadGoTarball(filename);
+    console.log("Finished downloading the file.");
+  } else {
+    console.log("Tarball already exists in the cache. Skipping the download.");
+  }
   console.log("Extracting the file contents now.");
   // Extract the tarball
   await extractGoTarball(filename, goVersion);
   console.log("Finished extracting the file contents.");
-  // Cleanup the downloaded tarball
-  await fs.rm(filename);
 };
 
 export const listCommand = () => {
@@ -39,4 +43,4 @@ export const initCommand = () => {
 export GOROOT="${path.join(__dirname, "../default/go")}"
 export PATH="${path.join(__dirname, "../default/go/bin")}:$PATH"`;
   console.log(initScript);
-}
+};

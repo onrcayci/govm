@@ -8,6 +8,7 @@ import axios, { AxiosResponse } from "axios";
 
 const GO_DOWNLOAD_URL = "https://go.dev/dl";
 const VERSIONS_DIR = path.join(__dirname, "../versions");
+const CACHE_DIR = path.join(__dirname, "../cache");
 
 // Promisify the exec command from the child_process module
 const execCommand = promisify(exec);
@@ -24,8 +25,10 @@ export const downloadGoTarball = async (tarballName: string): Promise<void> => {
       `Download failed with the following status code: ${res.status}`
     );
   }
-  // Write the data received to a local file
-  await fs.writeFile(tarballName, res.data);
+  // Create the cache directory if it does not exist
+  await createFolderIfMissing(CACHE_DIR);
+  // Write the data received to a local cache
+  await fs.writeFile(path.join(CACHE_DIR, tarballName), res.data);
 };
 
 export const extractGoTarball = async (
@@ -33,21 +36,35 @@ export const extractGoTarball = async (
   tarballVersion: string
 ): Promise<void> => {
   const extractDir = path.join(VERSIONS_DIR, tarballVersion);
-  try {
-    // Check if the directory to extract files exist
-    await fs.access(extractDir);
-  } catch {
-    // If the directory does not exist, create it
-    await fs.mkdir(extractDir, {
-      recursive: true,
-    });
-  }
+  // Create the extract directory if it does not exist
+  await createFolderIfMissing(extractDir);
   // Extract the tarball by spawning a child shell process
   const { stderr } = await execCommand(
-    `tar -xf ${tarballName} --directory ${extractDir}`
+    `tar -xf ${path.join(CACHE_DIR, tarballName)} --directory ${extractDir}`
   );
   // Check if any error is raised by the extract command
   if (stderr) {
     throw new Error(stderr);
+  }
+};
+
+export const isTarballCached = async (tarballName: string): Promise<boolean> => {
+  try {
+    await fs.access(path.join(CACHE_DIR, tarballName));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const createFolderIfMissing = async (folder: string): Promise<void> => {
+  try {
+    // Check if the directory exists
+    await fs.access(folder);
+  } catch {
+    // If the directory does not exist, create it
+    await fs.mkdir(folder, {
+      recursive: true,
+    });
   }
 };

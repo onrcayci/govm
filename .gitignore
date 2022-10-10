@@ -3,3 +3,4 @@ node_modules/
 versions/
 *.tar.gz
 default
+cache/
