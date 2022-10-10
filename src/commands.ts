@@ -6,6 +6,8 @@ import { promisify } from "util";
 
 import axios, { AxiosResponse } from "axios";
 
+import { versions } from "./versions";
+
 const execCommand = promisify(exec);
 
 export const installCommand = async (goVersion: string): Promise<void> => {
@@ -35,4 +37,9 @@ export const installCommand = async (goVersion: string): Promise<void> => {
     throw new Error(stderr);
   }
   console.log("Finished extracting the file contents.");
+};
+
+export const listCommand = () => {
+  const versionsString = versions.join("\n");
+  console.log(versionsString);
 };

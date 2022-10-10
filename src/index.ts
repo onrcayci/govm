@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 import yargs from "yargs";
 
-import { installCommand } from "./commands";
+import { installCommand, listCommand } from "./commands";
 
 yargs.scriptName("govm");
 
@@ -20,6 +20,15 @@ yargs.command(
         yargs.exit(1, err);
       }
     }
+  }
+);
+
+yargs.command(
+  "list",
+  "List the Go versions that can be installed.",
+  () => {},
+  () => {
+    listCommand();
   }
 );
 
