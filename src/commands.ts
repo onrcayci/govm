@@ -1,42 +1,23 @@
-import { exec } from "child_process";
 import fs from "fs/promises";
-import path from "path";
-import { Readable } from "stream";
-import { promisify } from "util";
 
-import axios, { AxiosResponse } from "axios";
-
+import { downloadGoTarball, extractGoTarball } from "./utils";
 import { versions } from "./versions";
 
-const execCommand = promisify(exec);
-
 export const installCommand = async (goVersion: string): Promise<void> => {
+  // Create the tarball name using the version and runtime info
   const filename = `go${goVersion}.${
     process.platform === "win32" ? "windows" : process.platform
   }-${process.arch === "x64" ? "amd64" : process.arch}.tar.gz`;
   console.log("Downloading the tarball.");
-  const response: AxiosResponse<Readable> = await axios.get(
-    `https://go.dev/dl/${filename}`,
-    {
-      responseType: "stream",
-    }
-  );
-  await fs.writeFile(filename, response.data);
+  // Download the tarball
+  await downloadGoTarball(filename);
   console.log("Finished downloading the file.");
   console.log("Extracting the file contents now.");
-  await fs.mkdir(path.join(__dirname, `../versions/${goVersion}`), {
-    recursive: true,
-  });
-  const { stderr } = await execCommand(
-    `tar -xf ${filename} --directory ${path.join(
-      __dirname,
-      `../versions/${goVersion}`
-    )}`
-  );
-  if (stderr) {
-    throw new Error(stderr);
-  }
+  // Extract the tarball
+  await extractGoTarball(filename, goVersion);
   console.log("Finished extracting the file contents.");
+  // Cleanup the downloaded tarball
+  await fs.rm(filename);
 };
 
 export const listCommand = () => {

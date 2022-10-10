@@ -3,8 +3,10 @@ import yargs from "yargs";
 
 import { installCommand, listCommand } from "./commands";
 
+// Set the script name to a fixed one
 yargs.scriptName("govm");
 
+// Implement the install command
 yargs.command(
   "install",
   "Install the specified version of Go.",
@@ -23,6 +25,7 @@ yargs.command(
   }
 );
 
+// Implement the list command
 yargs.command(
   "list",
   "List the Go versions that can be installed.",
@@ -32,4 +35,5 @@ yargs.command(
   }
 );
 
+// Call the parse function
 yargs.parse();
