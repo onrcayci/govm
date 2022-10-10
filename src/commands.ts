@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import path from "path";
 
 import { downloadGoTarball, extractGoTarball } from "./utils";
 import { versions } from "./versions";
@@ -24,3 +25,18 @@ export const listCommand = () => {
   const versionsString = versions.join("\n");
   console.log(versionsString);
 };
+
+export const useCommand = async (goVersion: string) => {
+  await fs.symlink(
+    path.join(__dirname, `../versions/${goVersion}`),
+    path.join(__dirname, `../default`),
+    "dir"
+  );
+};
+
+export const initCommand = () => {
+  const initScript = `
+export GOROOT="${path.join(__dirname, "../default/go")}"
+export PATH="${path.join(__dirname, "../default/go/bin")}:$PATH"`;
+  console.log(initScript);
+}

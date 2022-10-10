@@ -1,7 +1,12 @@
 #! /usr/bin/env node
 import yargs from "yargs";
 
-import { installCommand, listCommand } from "./commands";
+import {
+  initCommand,
+  installCommand,
+  listCommand,
+  useCommand,
+} from "./commands";
 
 // Set the script name to a fixed one
 yargs.scriptName("govm");
@@ -32,6 +37,29 @@ yargs.command(
   () => {},
   () => {
     listCommand();
+  }
+);
+
+// Implement the use command
+yargs.command(
+  "use",
+  "Use the specified version of Go.",
+  () =>
+    yargs.options({
+      goVersion: { alias: "v", string: true, demandOption: true },
+    }),
+  async (args) => {
+    await useCommand(args.goVersion);
+  }
+);
+
+// Implement the init command
+yargs.command(
+  "init",
+  "Prepare the shell in order to use the Go version that is installed by govm.",
+  () => {},
+  () => {
+    initCommand();
   }
 );
 
