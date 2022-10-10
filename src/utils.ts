@@ -48,6 +48,15 @@ export const extractGoTarball = async (
   }
 };
 
+export const isTarballCached = async (tarballName: string): Promise<boolean> => {
+  try {
+    await fs.access(path.join(CACHE_DIR, tarballName));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const createFolderIfMissing = async (folder: string): Promise<void> => {
   try {
     // Check if the directory exists
